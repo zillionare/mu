@@ -34,14 +34,14 @@ const getFundNetValues = async (query) => {
       data: { items },
     },
   } = await axios.post("/api/funds/net_values", { ...query });
-  return { items };
+  return { items: camelCase(items) };
 };
 
-const getFundPortfolioStock = async ({ code }) => {
+const getFundPortfolioStock = async ({ code, symbol }) => {
   const {
     data: { data: { items } }
-  } = await axios.post("/api/funds/fund_portfolio_stock", { code })
-  return { items }
+  } = await axios.post("/api/funds/fund_portfolio_stock", { code, symbol })
+  return { items: camelCase(items) }
 }
 
 export { getFunds, getFundNetValues, getFundPortfolioStock };

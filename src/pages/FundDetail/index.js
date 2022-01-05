@@ -1,4 +1,4 @@
-import { Col, Row } from "antd";
+import { Button, Col, Row } from "antd";
 import { createContext, useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import FundChart from "../../components/FundChart";
@@ -14,13 +14,14 @@ const FundDetailPage = () => {
     state: { query, currentFund },
   } = location;
   const [fund, setFund] = useState(currentFund || {});
+  const [isModalVisible, setIsModalVisible] = useState(false)
   const [fundNetValues, setFundNetValues] = useState([]);
 
   useEffect(() => {
     getFundNetValues({ code: currentFund.code }).then(({ items }) => {
       setFundNetValues(items);
     });
-  }, []);
+  }, [currentFund.code]);
 
   const getFundDetail = (msg) => {
     setFund(msg);
@@ -34,7 +35,7 @@ const FundDetailPage = () => {
       <Row>
         <Col offset={1} span={4}>
           <div id="fund_detail_left">
-            <div className="title">基金列表</div>
+            <Button onClick={() => setIsModalVisible(!isModalVisible)} type={"primary"}>基金搜索</Button>
             <FundSearch
               isShowSearchBox={false}
               showFundHeader={false}
@@ -42,6 +43,8 @@ const FundDetailPage = () => {
               paginationSimple={true}
               query={query}
               getFundDetail={getFundDetail}
+              isModalVisible={isModalVisible}
+              setIsModalVisible={setIsModalVisible}
             />
           </div>
         </Col>

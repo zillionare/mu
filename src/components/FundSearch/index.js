@@ -4,9 +4,11 @@ import {
   Form,
   Input,
   InputNumber,
+  Modal,
+  Radio,
   Row,
   Select,
-  Table,
+  Table
 } from "antd";
 import _ from "lodash";
 import PropTypes from "prop-types";
@@ -15,26 +17,18 @@ import { useNavigate } from "react-router-dom";
 import { getFunds } from "../../service/request/api";
 import {
   INDOOR_OPERATE_MODE_ID,
-  OTC_OPERATE_MODE_ID,
+  OTC_OPERATE_MODE_ID
 } from "../../utils/constants";
 import "./index.less";
 
 const FundSearchBox = (props) => {
-  const { getFundList } = props;
+  const { getFundList, setIsModalVisible, query: queryParams } = props;
   const [form] = Form.useForm();
   const [totalTnaMin, setTotalTnaMin] = useState(-1);
   const [totalTnaMax, setTotalTnaMax] = useState(-1);
-  const [netValueMin, setFundNetValueMin] = useState(-1);
-  const [netValueMax, setFundNetValueMax] = useState(-1);
-  const onFinish = (values) => {};
+  const onFinish = (values) => { };
   const getFunds = () => {
     let query = form.getFieldValue();
-    if (netValueMax >= 0) {
-      Object.assign(query, { netValueMax });
-    }
-    if (netValueMin >= 0) {
-      Object.assign(query, { netValueMin });
-    }
 
     if (totalTnaMin >= 0) {
       Object.assign(query, { totalTnaMin });
@@ -56,11 +50,21 @@ const FundSearchBox = (props) => {
     if (!_.isEmpty(query["code"])) {
       query["code"] = _.split(query["code"], ",");
     }
-    getFundList(form.getFieldValue(), { current: 1, pageSize: 10 });
+
+    if (!_.isEmpty(query.positionSymbol)) {
+      query.positionSymbol = _.split(query.positionSymbol, ",")
+    }
+
+
+    getFundList(form.getFieldValue(), { current: 1, pageSize: 10 }).then(() => {
+      if (_.isFunction(setIsModalVisible)) {
+        setIsModalVisible(false)
+      }
+    });
   };
   return (
     <div>
-      <Form form={form} onFinish={onFinish}>
+      <Form form={form} onFinish={onFinish} initialValues={{ ...queryParams }}>
         <Row>
           <Col span={6} offset={1}>
             <Form.Item label={"基金代码"} name={"code"}>
@@ -73,18 +77,11 @@ const FundSearchBox = (props) => {
             </Form.Item>
           </Col>
           <Col span={6} offset={2}>
-            <Form.Item label={"基金净值"}>
-              <div style={{ display: "flex", justifyContent: "space-around" }}>
-                <InputNumber
-                  onChange={(val) => setFundNetValueMin(val)}
-                  allowClear
-                />
-                ~
-                <InputNumber
-                  onChange={(val) => setFundNetValueMax(val)}
-                  allowClear
-                />
-              </div>
+            <Form.Item label={"基金范围"} name={'fundRange'}>
+              <Radio.Group defaultValue={0}>
+                <Radio value={0}>全部基金</Radio>
+                <Radio value={1}>仅包含独门股的基金</Radio>
+              </Radio.Group>
             </Form.Item>
           </Col>
         </Row>
@@ -95,7 +92,7 @@ const FundSearchBox = (props) => {
             </Form.Item>
           </Col>
           <Col span={6} offset={2}>
-            <Form.Item label={"持仓股代码"} name={"position_code"}>
+            <Form.Item label={"持仓股代码"} name={"positionSymbol"}>
               <Input allowClear />
             </Form.Item>
           </Col>
@@ -109,13 +106,13 @@ const FundSearchBox = (props) => {
           <Col span={6} offset={1}>
             <Form.Item label={"基金类别"} name={"underlying_asset_type"}>
               <Select placeholder="请选择基金类别" allowClear>
-                <Select.Option value={"402001"}>股票型</Select.Option>
-                <Select.Option value={"402002"}>货币型</Select.Option>
-                <Select.Option value={"402003"}>债券型</Select.Option>
-                <Select.Option value={"402004"}>混合型</Select.Option>
-                <Select.Option value={"402005"}>基金型</Select.Option>
-                <Select.Option value={"402006"}>贵金属</Select.Option>
-                <Select.Option value={"402007"}>封闭式</Select.Option>
+                <Select.Option value={402001}>股票型</Select.Option>
+                <Select.Option value={402002}>货币型</Select.Option>
+                <Select.Option value={402003}>债券型</Select.Option>
+                <Select.Option value={402004}>混合型</Select.Option>
+                <Select.Option value={402005}>基金型</Select.Option>
+                <Select.Option value={402006}>贵金属</Select.Option>
+                <Select.Option value={402007}>封闭式</Select.Option>
               </Select>
             </Form.Item>
           </Col>
@@ -285,6 +282,7 @@ const FundSearchResult = (props) => {
           simple: paginationSimple,
           pageSize,
           current,
+          showTotal: (total) => `共 ${total} 条`
         }}
         rowKey={(record) => record.code || _.uniqueId()}
         onRow={(record) => {
@@ -333,9 +331,12 @@ const FundSearch = (props) => {
     fundColumns,
     paginationSimple,
     getFundDetail,
+    isModalVisible,
+    setIsModalVisible
   } = props;
   useEffect(() => {
     getFundList(query, pagination);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const getFundList = (query, pagination, filters, sorter) => {
@@ -358,8 +359,21 @@ const FundSearch = (props) => {
           <FundSearchBox getFundList={getFundList} />
         </div>
       )}
-
+      {
+        <Modal
+          title="基金搜索"
+          visible={isModalVisible}
+          bodyStyle={{ width: '1150px', height: '300px' }}
+          width={1150}
+          centered={true}
+          footer={null}
+          onCancel={() => setIsModalVisible(false)}
+        >
+          <FundSearchBox getFundList={getFundList} setIsModalVisible={setIsModalVisible} query={query} />
+        </Modal>
+      }
       <div id="fund_search_result">
+        <div className="title">基金列表</div>
         <FundSearchResult
           {...{
             items,
@@ -386,6 +400,7 @@ FundSearch.propTypes = {
   paginationSimple: PropTypes.bool,
   query: PropTypes.object,
   getFundDetail: PropTypes.func,
+  isModalVisible: PropTypes.bool
 };
 
 FundSearch.defaultProps = {
@@ -393,6 +408,7 @@ FundSearch.defaultProps = {
   showFundHeader: true,
   fundColumns: [],
   paginationSimple: false,
+  isModalVisible: false
 };
 
 export default FundSearch;

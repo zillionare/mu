@@ -1,4 +1,4 @@
-import { Route, Navigate } from "react-router-dom";
+import { Route } from "react-router-dom";
 
 const AuthRoute = (props) => {
   const user = localStorage.getItem("user");

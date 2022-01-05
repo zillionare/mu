@@ -15,7 +15,7 @@ const FundChart = (props) => {
     data: sortedData,
     padding: "auto",
     xField: "day",
-    yField: "netValue",
+    yField: "sumValue",
     yAxis: {},
   };
   return (
@@ -33,7 +33,7 @@ const FundChart = (props) => {
 };
 
 FundChart.propTypes = {
-  data: propTypes.object,
+  data: propTypes.array,
   fund: propTypes.object,
   isFocused: propTypes.bool,
 };

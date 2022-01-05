@@ -2,6 +2,7 @@ import { Line } from "@ant-design/charts";
 import { Table, Tabs } from "antd";
 import { useState, useEffect } from "react";
 import { getFundPortfolioStock } from "../../service/request/api";
+import _ from 'lodash'
 import "./index.less";
 
 const FundInfo = (props) => {
@@ -18,9 +19,52 @@ const FundInfo = (props) => {
         },
     } = props;
     const [postionStock, setPostionStock] = useState([])
+    const [perPostionStock, setPerPostionStock] = useState([])
+    const [maxPubDate, setMaxPubDate] = useState('-')
+    const [sumProportion, setSumProportion] = useState('0')
     useEffect(() => {
-        getFundPortfolioStock({ code }).then(({ items }) => setPostionStock(items))
-    }, [])
+        async function fetchData() {
+            const { items } = await getFundPortfolioStock({ code })
+            const _maxPubDate = _.maxBy(items, 'pubDate')?.pubDate
+            const quoteChangeResult = _.reduce(_.map(_.values(_.groupBy(items, 'symbol')), (data) => {
+                data = _.reverse(_.sortBy(data, ['pubDate'], ['desc']))
+                if (data?.length > 1) {
+                    let quoteChange = `${(data[0].proportion - data[1].proportion)}`
+                    if (!_.startsWith(quoteChange, '-')) {
+                        quoteChange = `+${quoteChange}`
+                    }
+                    return {
+                        [data[0].symbol]: quoteChange.substring(0, quoteChange.indexOf('.') + 3)
+                    }
+                } else {
+                    return {
+                        [data[0].symbol]: '新增'
+                    }
+                }
+            }), (result, value) => {
+                Object.assign(result, value)
+                return result;
+            }, {})
+            const _PostionStock = _.map(_.orderBy(_.filter(items, ({ pubDate }) => pubDate === _maxPubDate), ['proportion',], ['desc']), (row) => {
+                row.quoteChange = quoteChangeResult[row.symbol] || '-'
+                return row
+            })
+            const symbol = _PostionStock[0]?.symbol
+            setMaxPubDate(_maxPubDate)
+            setPostionStock(_PostionStock)
+            setSumProportion(_.sumBy(_PostionStock, 'proportion').toString())
+            await getPerPostionStock({ code, symbol })
+        }
+        fetchData();
+    }, [code])
+
+    const getPerPostionStock = async ({ code, symbol }) => {
+        console.log('#############################################################', symbol)
+        const { items: symbolItems } = await getFundPortfolioStock({ code, symbol })
+        setPerPostionStock(_.sortBy(symbolItems, 'pubDate'))
+    }
+
+
     const columns = [
         {
             title: "股票名称",
@@ -31,49 +75,39 @@ const FundInfo = (props) => {
             title: "持仓占比",
             dataIndex: "proportion",
             key: "proportion",
+            render: (val) => `${val}%`
         },
         {
             title: "较上期",
             dataIndex: "quoteChange",
             key: "quoteChange",
-        },
-    ];
-    const lineData = [
-        {
-            Date: "2010-01",
-            scales: 1998,
-        },
-        {
-            Date: "2010-02",
-            scales: 1850,
-        },
-        {
-            Date: "2010-03",
-            scales: 1720,
-        },
-        {
-            Date: "2010-04",
-            scales: 1818,
-        },
-        {
-            Date: "2010-05",
-            scales: 1920,
-        },
-        {
-            Date: "2010-06",
-            scales: 1802,
-        },
-        {
-            Date: "2010-07",
-            scales: 1945,
+            render: (val) => {
+                if (val.length > 1) {
+                    if (_.startsWith(val, '+')) {
+                        return (
+                            <div style={{ color: "#dd2200" }}>
+                                {val}%
+                            </div>
+                        );
+                    } else if (_.startsWith(val, '-')) {
+                        return (
+                            <div style={{ color: "#009933" }}>
+                                {val}%
+                            </div>
+                        )
+                    }
+
+                }
+                return <div>{val}</div>
+            }
         },
     ];
 
     const config = {
-        data: lineData,
+        data: perPostionStock,
         padding: "auto",
-        xField: "Date",
-        yField: "scales",
+        xField: "pubDate",
+        yField: "proportion",
     };
 
     return (
@@ -115,10 +149,18 @@ const FundInfo = (props) => {
                         dataSource={postionStock}
                         pagination={{ hideOnSinglePage: true }}
                         size="small"
-                        style={{ fontSize: "10px" }}
+                        style={{ fontSize: "10px", marginTop: '10px' }}
+                        rowKey={row => row.id}
+                        onRow={(record) => {
+                            return {
+                                onClick: async (event) => {
+                                    await getPerPostionStock(record);
+                                }
+                            }
+                        }}
                     />
-                    <div>前十持仓占比合计: 78.17%</div>
-                    <div>持仓截止日期: 2021-09-30</div>
+                    <div>前十持仓占比合计: {sumProportion.substring(0, sumProportion.indexOf(".") + 3)}%</div>
+                    <div>持仓截止日期: {maxPubDate || '-'}</div>
                 </Tabs.TabPane>
             </Tabs>
         </div>
