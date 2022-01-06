@@ -1,7 +1,7 @@
-import Axios from "axios";
+import Axios from 'axios';
 
 const axios = Axios.create({
-  baseURL: 'http://192.168.100.111:3181' || "",
+  baseURL: process.env.MU_BASE_URL || '',
   timeout: 5000,
 });
 

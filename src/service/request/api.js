@@ -1,6 +1,6 @@
-import axios from "./http";
-import _ from "lodash";
-import { camelCase, snakeCase } from "../../utils/utils";
+import axios from './http';
+import _ from 'lodash';
+import { camelCase, snakeCase } from '../../utils/utils';
 
 const getFunds = async (query, pagination, filters, sorter) => {
   let queryParams = {};
@@ -15,7 +15,10 @@ const getFunds = async (query, pagination, filters, sorter) => {
     sorter = _.map(
       _.filter(sorter, (row) => !!row.order),
       ({ field, order }) => {
-        return { field: _.snakeCase(field), order: _.replace(order, "end", "") };
+        return {
+          field: _.snakeCase(field),
+          order: _.replace(order, 'end', ''),
+        };
       }
     );
     Object.assign(queryParams, { sorter });
@@ -24,7 +27,7 @@ const getFunds = async (query, pagination, filters, sorter) => {
     data: {
       data: { items, count },
     },
-  } = await axios.post("/api/funds", { ...snakeCase(queryParams) });
+  } = await axios.post('/api/funds', { ...snakeCase(queryParams) });
   return { items: camelCase(items), totalCount: count };
 };
 
@@ -33,15 +36,17 @@ const getFundNetValues = async (query) => {
     data: {
       data: { items },
     },
-  } = await axios.post("/api/funds/net_values", { ...query });
+  } = await axios.post('/api/funds/net_values', { ...query });
   return { items: camelCase(items) };
 };
 
 const getFundPortfolioStock = async ({ code, symbol }) => {
   const {
-    data: { data: { items } }
-  } = await axios.post("/api/funds/fund_portfolio_stock", { code, symbol })
-  return { items: camelCase(items) }
-}
+    data: {
+      data: { items },
+    },
+  } = await axios.post('/api/funds/fund_portfolio_stock', { code, symbol });
+  return { items: camelCase(items) };
+};
 
 export { getFunds, getFundNetValues, getFundPortfolioStock };

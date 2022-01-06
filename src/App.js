@@ -1,7 +1,5 @@
-import { Footer } from 'antd/lib/layout/layout';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import './App.less';
-import JieyuFooter from './components/JieyuFooter';
 import JieyuHeader from './components/JieyuHeader';
 import FundPage from './pages/Fund';
 import FundDetailPage from './pages/FundDetail';
@@ -12,7 +10,6 @@ import StockPage from './pages/Stock';
 function App() {
   return (
     <div className="App">
-
       <BrowserRouter>
         <JieyuHeader isLoggid={true} />
         <Routes>

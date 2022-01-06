@@ -1,6 +1,5 @@
 const StockPage = () => {
-    return <div>this is stock page</div>
-}
+  return <div>this is stock page</div>;
+};
 
-
-export default StockPage
+export default StockPage;

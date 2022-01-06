@@ -8,25 +8,20 @@ import {
   Radio,
   Row,
   Select,
-  Table
-} from "antd";
-import _ from "lodash";
-import PropTypes from "prop-types";
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { getFunds } from "../../service/request/api";
-import {
-  INDOOR_OPERATE_MODE_ID,
-  OTC_OPERATE_MODE_ID
-} from "../../utils/constants";
-import "./index.less";
+  Table,
+} from 'antd';
+import _ from 'lodash';
+import PropTypes from 'prop-types';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { getFunds } from '../../service/request/api';
+import './index.less';
 
 const FundSearchBox = (props) => {
   const { getFundList, setIsModalVisible, query: queryParams } = props;
   const [form] = Form.useForm();
   const [totalTnaMin, setTotalTnaMin] = useState(-1);
   const [totalTnaMax, setTotalTnaMax] = useState(-1);
-  const onFinish = (values) => { };
   const getFunds = () => {
     let query = form.getFieldValue();
 
@@ -37,47 +32,41 @@ const FundSearchBox = (props) => {
       Object.assign(query, { totalTnaMax });
     }
 
-    if (query.fund_type === "indoor_fund") {
+    if (query.operate_mode_id) {
       Object.assign(query, {
-        operate_mode_id: INDOOR_OPERATE_MODE_ID,
-      });
-    } else if (query.fund_type === "otc_fund") {
-      Object.assign(query, {
-        operate_mode_id: OTC_OPERATE_MODE_ID,
+        operate_mode_id: [query.operate_mode_id],
       });
     }
 
-    if (!_.isEmpty(query["code"])) {
-      query["code"] = _.split(query["code"], ",");
+    if (!_.isEmpty(query['code'])) {
+      query['code'] = _.split(query['code'], ',');
     }
 
     if (!_.isEmpty(query.positionSymbol)) {
-      query.positionSymbol = _.split(query.positionSymbol, ",")
+      query.positionSymbol = _.split(query.positionSymbol, ',');
     }
 
-
-    getFundList(form.getFieldValue(), { current: 1, pageSize: 10 }).then(() => {
-      if (_.isFunction(setIsModalVisible)) {
-        setIsModalVisible(false)
-      }
-    });
+    getFundList(form.getFieldValue(), { current: 1, pageSize: 10 });
+    if (_.isFunction(setIsModalVisible)) {
+      setIsModalVisible(false);
+    }
   };
   return (
     <div>
-      <Form form={form} onFinish={onFinish} initialValues={{ ...queryParams }}>
+      <Form form={form} initialValues={{ ...queryParams }}>
         <Row>
           <Col span={6} offset={1}>
-            <Form.Item label={"基金代码"} name={"code"}>
+            <Form.Item label={'基金代码'} name={'code'}>
               <Input allowClear />
             </Form.Item>
           </Col>
           <Col span={6} offset={2}>
-            <Form.Item label={"基金名称"} name={"name"}>
+            <Form.Item label={'基金名称'} name={'name'}>
               <Input allowClear />
             </Form.Item>
           </Col>
           <Col span={6} offset={2}>
-            <Form.Item label={"基金范围"} name={'fundRange'}>
+            <Form.Item label={'基金范围'} name={'fundRange'}>
               <Radio.Group defaultValue={0}>
                 <Radio value={0}>全部基金</Radio>
                 <Radio value={1}>仅包含独门股的基金</Radio>
@@ -87,24 +76,24 @@ const FundSearchBox = (props) => {
         </Row>
         <Row>
           <Col span={6} offset={1}>
-            <Form.Item label={"持仓股名称"} name={"postion_stock"}>
+            <Form.Item label={'持仓股名称'} name={'postion_stock'}>
               <Input allowClear />
             </Form.Item>
           </Col>
           <Col span={6} offset={2}>
-            <Form.Item label={"持仓股代码"} name={"positionSymbol"}>
+            <Form.Item label={'持仓股代码'} name={'positionSymbol'}>
               <Input allowClear />
             </Form.Item>
           </Col>
           <Col span={6} offset={2}>
-            <Form.Item label={"重仓股仓位和"} name={"position_stock_percent"}>
+            <Form.Item label={'重仓股仓位和'} name={'position_stock_percent'}>
               <InputNumber allowClear />
             </Form.Item>
           </Col>
         </Row>
         <Row>
           <Col span={6} offset={1}>
-            <Form.Item label={"基金类别"} name={"underlying_asset_type"}>
+            <Form.Item label={'基金类别'} name={'underlying_asset_type'}>
               <Select placeholder="请选择基金类别" allowClear>
                 <Select.Option value={402001}>股票型</Select.Option>
                 <Select.Option value={402002}>货币型</Select.Option>
@@ -117,16 +106,22 @@ const FundSearchBox = (props) => {
             </Form.Item>
           </Col>
           <Col span={6} offset={2}>
-            <Form.Item label={"基金运作方式"} name={"fund_type"}>
+            <Form.Item label={'基金运作方式'} name={'operate_mode_id'}>
               <Select placeholder="请选择基金类型" allowClear>
-                <Select.Option value={"indoor_fund"}>场内基金</Select.Option>
-                <Select.Option value={"otc_fund"}>场外基金</Select.Option>
+                <Select.Option value={401001}>开放式</Select.Option>
+                <Select.Option value={401002}>封闭式</Select.Option>
+                <Select.Option value={401003}>QDII</Select.Option>
+                <Select.Option value={401004}>FOF</Select.Option>
+                <Select.Option value={401005}>ETF</Select.Option>
+                <Select.Option value={401006}>LOF</Select.Option>
+                <Select.Option value={401007}>MOM</Select.Option>
+                <Select.Option value={401008}>基础设施</Select.Option>
               </Select>
             </Form.Item>
           </Col>
           <Col span={6} offset={2}>
-            <Form.Item label={"基金规模"}>
-              <div style={{ display: "flex", justifyContent: "space-around" }}>
+            <Form.Item label={'基金规模'}>
+              <div style={{ display: 'flex', justifyContent: 'space-around' }}>
                 <InputNumber
                   onChange={(val) => setTotalTnaMin(val)}
                   allowClear
@@ -141,12 +136,12 @@ const FundSearchBox = (props) => {
           </Col>
         </Row>
         <Row>
-          <Col span={23} style={{ textAlign: "right" }}>
+          <Col span={23} style={{ textAlign: 'right' }}>
             <Button type="primary" onClick={getFunds}>
               搜索
             </Button>
             <Button
-              style={{ margin: "0 10px" }}
+              style={{ margin: '0 10px' }}
               onClick={() => form.resetFields()}
             >
               重置
@@ -156,6 +151,12 @@ const FundSearchBox = (props) => {
       </Form>
     </div>
   );
+};
+
+FundSearchBox.propTypes = {
+  getFundList: PropTypes.func,
+  setIsModalVisible: PropTypes.func,
+  query: PropTypes.object,
 };
 
 const FundSearchResult = (props) => {
@@ -174,80 +175,88 @@ const FundSearchResult = (props) => {
   let navigate = useNavigate();
   const [pageSize, setPageSize] = useState(10);
   let columns = [
-    { title: "基金代码", dataIndex: "code", key: "code" },
-    { title: "基金名称", dataIndex: "name", key: "name" },
+    { title: '基金代码', dataIndex: 'code', key: 'code' },
+    { title: '基金名称', dataIndex: 'name', key: 'name' },
     {
-      title: "基金类型",
-      dataIndex: "operateModeId",
-      key: "operateModeId",
-      render: (val) => {
-        if (_.includes(INDOOR_OPERATE_MODE_ID, val)) {
-          return "场内基金";
-        } else if (_.includes(OTC_OPERATE_MODE_ID, val)) {
-          return "场外基金";
-        }
-        return null;
-      },
+      title: '基金类型',
+      dataIndex: 'underlyingAssetType',
+      key: 'underlyingAssetType',
     },
-    { title: "基金规模", dataIndex: "totalTna", key: "totalTna" },
+    { title: '基金运作方式', dataIndex: 'operateMode', key: 'operateMode' },
+    { title: '基金规模', dataIndex: 'totalTna', key: 'totalTna' },
     {
-      title: "基金单位净值",
-      dataIndex: "netValue",
-      key: "netValue",
+      title: '基金单位净值',
+      dataIndex: 'netValue',
+      key: 'netValue',
       render: (netValue) => netValue && Math.round(netValue * 10000) / 10000,
     },
     {
-      title: "近一周涨跌幅",
-      dataIndex: "quoteChangeWeekly",
-      key: "quoteChangeWeekly",
+      title: '近一周涨跌幅',
+      dataIndex: 'quoteChangeWeekly',
+      key: 'quoteChangeWeekly',
       sorter: { multiple: 2 },
       render: (val) => {
         const val_string =
-          (val > 0 ? "+" : "") +
+          (val > 0 ? '+' : '') +
           ((Math.round(val * 10000) / 10000) * 100).toString();
         if (val > 0) {
           return (
-            <div style={{ color: "#dd2200" }}>
-              {val_string.substring(0, val_string.indexOf(".") + 3)}%
+            <div style={{ color: '#dd2200' }}>
+              {val_string.substring(0, val_string.indexOf('.') + 3)}%
             </div>
           );
         } else if (val < 0) {
           return (
-            <div style={{ color: "#009933" }}>
-              {val_string.substring(0, val_string.indexOf(".") + 3)}%
+            <div style={{ color: '#009933' }}>
+              {val_string.substring(0, val_string.indexOf('.') + 3)}%
             </div>
           );
         } else if (val === 0) {
           return <div>0.0</div>;
         }
-        return "";
+        return '';
       },
     },
     {
-      title: "近一月涨跌幅",
-      dataIndex: "quoteChangeMonthly",
-      key: "quoteChangeMonthly",
+      title: '近一月涨跌幅',
+      dataIndex: 'quoteChangeMonthly',
+      key: 'quoteChangeMonthly',
       sorter: { multiple: 1 },
       render: (val) => {
         const val_string =
-          (val > 0 ? "+" : "") +
+          (val > 0 ? '+' : '') +
           ((Math.round(val * 10000) / 10000) * 100).toString();
         if (val > 0) {
           return (
-            <div style={{ color: "#dd2200" }}>
-              {val_string.substring(0, val_string.indexOf(".") + 3)}%
+            <div style={{ color: '#dd2200' }}>
+              {val_string.substring(0, val_string.indexOf('.') + 3)}%
             </div>
           );
         } else if (val < 0) {
           return (
-            <div style={{ color: "#009933" }}>
-              {val_string.substring(0, val_string.indexOf(".") + 3)}%
+            <div style={{ color: '#009933' }}>
+              {val_string.substring(0, val_string.indexOf('.') + 3)}%
             </div>
           );
         } else if (val === 0) {
           return <div>0.0</div>;
         }
-        return "";
+        return '';
+      },
+    },
+    {
+      title: '独门股',
+      dataIndex: 'stocks',
+      key: 'stocks',
+      render: (val) => {
+        const singleStocks = _.filter(val, 'is_single_stock');
+        return (
+          <div>
+            {_.map(singleStocks, (stock) => {
+              return <div>{stock.name}</div>;
+            })}
+          </div>
+        );
       },
     },
   ];
@@ -258,7 +267,7 @@ const FundSearchResult = (props) => {
 
   const onChange = (pagination, filters, sorter, extra) => {
     const { action } = extra;
-    if (action === "paginate") {
+    if (action === 'paginate') {
       setPageSize(pagination.pageSize);
     }
     if (!_.isArray(sorter)) {
@@ -282,19 +291,19 @@ const FundSearchResult = (props) => {
           simple: paginationSimple,
           pageSize,
           current,
-          showTotal: (total) => `共 ${total} 条`
+          showTotal: (total) => `共 ${total} 条`,
         }}
         rowKey={(record) => record.code || _.uniqueId()}
         onRow={(record) => {
           return {
-            onClick: (event) => {
+            onClick: () => {
               if (_.isEmpty(record)) {
                 return;
               }
               if (_.isFunction(getFundDetail)) {
                 getFundDetail(record);
               } else {
-                navigate("/funds/detail", {
+                navigate('/funds/detail', {
                   state: {
                     query: query,
                     currentFund: record,
@@ -317,13 +326,18 @@ FundSearchResult.propTypes = {
   showHeader: PropTypes.bool,
   showColumns: PropTypes.array,
   paginationSimple: PropTypes.bool,
+  getFundListPartial: PropTypes.func,
+  current: PropTypes.number,
+  query: PropTypes.object,
+  getFundDetail: PropTypes.func,
+  pagination: PropTypes.object,
 };
 
 const FundSearch = (props) => {
   const [items, setItems] = useState([]);
   const [totalCount, setTotalCount] = useState(0);
   const [current, setCurrent] = useState(1);
-  const [query, setQuery] = useState(props.query || { name: "" });
+  const [query, setQuery] = useState(props.query || { name: '' });
   const [pagination, setPagination] = useState(props.pagination || {});
   const {
     isShowSearchBox,
@@ -332,11 +346,10 @@ const FundSearch = (props) => {
     paginationSimple,
     getFundDetail,
     isModalVisible,
-    setIsModalVisible
+    setIsModalVisible,
   } = props;
   useEffect(() => {
     getFundList(query, pagination);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const getFundList = (query, pagination, filters, sorter) => {
@@ -369,7 +382,11 @@ const FundSearch = (props) => {
           footer={null}
           onCancel={() => setIsModalVisible(false)}
         >
-          <FundSearchBox getFundList={getFundList} setIsModalVisible={setIsModalVisible} query={query} />
+          <FundSearchBox
+            getFundList={getFundList}
+            setIsModalVisible={setIsModalVisible}
+            query={query}
+          />
         </Modal>
       }
       <div id="fund_search_result">
@@ -400,7 +417,9 @@ FundSearch.propTypes = {
   paginationSimple: PropTypes.bool,
   query: PropTypes.object,
   getFundDetail: PropTypes.func,
-  isModalVisible: PropTypes.bool
+  isModalVisible: PropTypes.bool,
+  setIsModalVisible: PropTypes.func,
+  pagination: PropTypes.object,
 };
 
 FundSearch.defaultProps = {
@@ -408,7 +427,7 @@ FundSearch.defaultProps = {
   showFundHeader: true,
   fundColumns: [],
   paginationSimple: false,
-  isModalVisible: false
+  isModalVisible: false,
 };
 
 export default FundSearch;
