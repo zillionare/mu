@@ -18,7 +18,7 @@ function App() {
           <Route path="/funds/detail" element={<FundDetailPage />} />
           <Route path="/stocks" element={<StockPage />} />
           <Route path="/login" element={<LoginPage />} />
-          {/* <AuthRoute path="/log" element={<HomePage />} /> */}
+
         </Routes>
       </BrowserRouter>
     </div>

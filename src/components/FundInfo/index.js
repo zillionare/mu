@@ -13,10 +13,10 @@ const FundInfo = (props) => {
       code,
       advisor,
       trustee,
-      operate_mode,
-      start_date,
-      pub_date,
-      end_date,
+      operateMode,
+      startDate,
+      pubDate,
+      endDate,
     },
   } = props;
   const [postionStock, setPostionStock] = useState([]);
@@ -143,16 +143,16 @@ const FundInfo = (props) => {
           基金托管人: {trustee || '-'}
         </div>
         <div className="info" id="operate_mode">
-          基金运作方式: {operate_mode || '-'}
+          基金运作方式: {operateMode || '-'}
         </div>
         <div className="info" id="start_date">
-          成立日期: {start_date || '-'}
+          成立日期: {startDate || '-'}
         </div>
         <div className="info" id="pub_date">
-          发行日期: {pub_date || '-'}
+          发行日期: {pubDate || '-'}
         </div>
         <div className="info" id="end_date">
-          结束日期: {end_date || '-'}
+          结束日期: {endDate || '-'}
         </div>
       </div>
       <Tabs type="card">
@@ -190,10 +190,10 @@ FundInfo.propTypes = {
     code: propTypes.string,
     advisor: propTypes.string,
     trustee: propTypes.string,
-    operate_mode: propTypes.string,
-    start_date: propTypes.string,
-    pub_date: propTypes.string,
-    end_date: propTypes.string,
+    operateMode: propTypes.string,
+    startDate: propTypes.string,
+    pubDate: propTypes.string,
+    endDate: propTypes.string,
   }),
 };
 
