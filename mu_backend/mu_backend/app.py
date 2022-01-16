@@ -8,44 +8,41 @@ Contributors:
 import logging
 
 import cfg4py
-import fire
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from sanic import Blueprint, Sanic
 from apis import funds
 from config import get_config_dir
+from omicron.dal import init as init_db
+from sanic import Blueprint, Sanic
+from sanic_cors import CORS
 
 cfg = cfg4py.get_instance()
 
 app = Sanic("MuBackend")
+CORS(app)
 
 logger = logging.getLogger(__name__)
 
 
-class Omega(object):
-    def __init__(self, **kwargs):
-        self.port = kwargs.get("port")
-        self.gid = kwargs.get("account")
-
-        self.params = kwargs
-        self.inherit_cfg = {}
-
+class MuBackend(object):
     async def init(self, *args):
         logger.info("init %s", self.__class__.__name__)
 
         cfg4py.init(get_config_dir(), False)
-        cfg4py.update_config(self.inherit_cfg)
 
-        interfaces = Blueprint.group(funds.bp)
-        app.blueprint(interfaces)
+        await init_db(cfg.postgres.dsn)
+
+        logger.info("<<< init %s process done", self.__class__.__name__)
 
 
 def start():
-    omega = Omega()
-
-    app.register_listener(omega.init, "before_server_start")
-
-    logger.info("starting sanic group listen on %s with %s workers", 3001, 1)
-    app.run(debug=True)
+    mu_backend = MuBackend()
+    app.register_listener(mu_backend.init, "BEFORE_SERVER_START")
+    interfaces = Blueprint.group(funds.bp)
+    app.blueprint(interfaces)
+    app.run(
+        host="0.0.0.0",
+        workers=1,
+        register_sys_signals=True,
+    )
     logger.info("sanic stopped.")
 
 
